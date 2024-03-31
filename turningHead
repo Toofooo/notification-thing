@@ -1,0 +1,97 @@
+/*
+  Standard Servo Control with Button
+  -----------------------------------
+
+  This Arduino sketch demonstrates the control of a standard servo motor using a button. 
+  Unlike continuous rotation servos, standard servos rotate to specific angles, allowing for precise control over position. 
+  This example toggles the servo's position between two angles upon button presses.
+
+  Components Required:
+  - 1x Standard Servo Motor
+  - 1x Pushbutton Switch
+  - 1x Arduino Board (e.g., Uno, Mega, Nano)
+  - Jumper Wires
+  - Breadboard (optional, for easier prototyping)
+
+  Circuit Connections:
+  - The servo motor's control wire is connected to digital pin 14 (A0) on the Arduino.
+  - The pushbutton switch is connected between digital pin 15 (12) and ground, utilizing the Arduino's internal pull-up resistor.
+
+  Libraries Used:
+  - <Servo.h>: A library included with the Arduino IDE for controlling servo motors.
+
+  Code Overview:
+  - Pin assignments are declared for the servo and button.
+  - Two angles are defined to represent the servo positions for different states.
+  - A `Servo` object is created for interfacing with the servo motor.
+  - The `setup()` function initializes serial communication, configures the button pin, and attaches the servo to its control pin.
+  - Within the `loop()` function, the code continually checks the button state to adjust the servo's position according to the current system state.
+  - A custom function, `determinState()`, updates the system's state based on the button input, toggling between two predefined servo positions.
+
+  How It Works:
+  - Initially, the servo is set to its position for state 0.
+  - Pressing the button changes the servo's position to that defined for state 1, and vice versa.
+  - The current state is printed to the serial monitor, aiding in debugging and understanding the system's behavior.
+
+  Note:
+  - Standard servos have a limited range of motion, typically 0 to 180 degrees. This example uses angles within this range to move the servo between two positions.
+  - The internal pull-up resistor is enabled for the button pin, which means the pin reads HIGH when the button is not pressed and LOW when it is pressed.
+
+
+*/
+
+#include <Servo.h> // Include the Servo library to control servo motors.
+
+// Pin assignments
+int servoPin = 14; // Servo motor control pin connected to pin A0 on the Arduino.
+int buttonPin = 15; // Button pin connected to digital pin 12 on the Arduino.
+
+// Servo positions for different states
+int state0angle = 10; // Servo position angle for state 0.
+int state1angle = 180; // Servo position angle for state 1.
+
+// Current state of the system
+bool currentState = 0; // The starting state of the system. (0 by default)
+
+// Button state variables
+bool buttonCurrent; // Stores the current read value of the button.
+bool buttonPrev = true; // Stores the previous read value of the button to detect state changes.
+
+// Servo object
+Servo notifier; // Create a Servo object to control the servo motor.
+
+
+void setup() {
+  Serial.begin(9600); // Initialize serial communication at 9600 bits per second.
+  pinMode(buttonPin, INPUT_PULLUP); // Set the button pin as an input with an internal pull-up resistor.
+  notifier.attach(servoPin); // Attach the servo motor to the servo pin.
+ 
+
+}
+
+void loop() {
+  determineState(); // Determine the current state based on the button input.
+  Serial.println(currentState); // Output the current state to the serial monitor.
+  
+  // Move the servo based on the current state
+  switch (currentState) {
+    case 0:
+      notifier.write(state0angle); // Set the servo to the angle for state 0.
+      break;
+    case 1:
+      notifier.write(state1angle); // Set the servo to the angle for state 1.
+      break;
+  }
+}
+
+// Function to determine the current state based on button input
+void determineState() {
+  buttonCurrent = digitalRead(buttonPin); // Read the current state of the button.
+
+  // If the button state has changed from not pressed to pressed
+  if(buttonCurrent == 1 && buttonPrev == 0) {
+    currentState = !currentState; // Toggle the current state.
+  }
+
+  buttonPrev = buttonCurrent; // Update the previous button state for the next loop iteration.
+}
